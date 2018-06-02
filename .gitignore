@@ -45,3 +45,4 @@ build
 
 #VS2010 - User preferences
 etc/DB/SQL Server/PW-ApplicationInit2010/PW-ApplicationInit2010.suo
+out/
