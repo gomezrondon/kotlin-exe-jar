@@ -1,7 +1,6 @@
-import krangl.DataFrame
-import krangl.readCSV
-import krangl.sampleFrac
-import krangl.schema
+import krangl.*
+import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
 
 
 fun main() {
@@ -29,6 +28,19 @@ fun main() {
         println(row) //{id=578, first_name=Salvador, time=2018-12-13 08:54:56, last_name=MacRory, gender=Male, ip_address=108.131.123.75}
     }*/
 
+    //--------------------------
+    val datePattern = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")
+    val firstTime = trainData["time"].asStrings().first()
+    val parse = LocalDateTime.parse(firstTime,datePattern)
+    println(parse) // test
+
+    //como formatear la time[str] -> hola[LocalDateTime]
+    val trainData2 = trainData.addColumns(
+            ColumnFormula("hola") {it["time"].map<String>{LocalDateTime.parse(it,datePattern)}}
+    )
+
+    println(trainData2.schema())
 }
+
 
 
