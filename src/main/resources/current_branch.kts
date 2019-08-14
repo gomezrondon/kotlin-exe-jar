@@ -1,6 +1,6 @@
 import java.io.File
 
-var stashName = args[0].toString().toLowerCase()
+var stashName = args[0].toLowerCase()
 
 val lines = File(stashName).readLines()
 
