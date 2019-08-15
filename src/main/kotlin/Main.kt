@@ -1,46 +1,78 @@
 import krangl.*
-import java.time.LocalDateTime
-import java.time.format.DateTimeFormatter
 
+//https://github.com/holgerbrandl/krangl
 
 fun main() {
-    val data = DataFrame.readCSV("mock_data.csv")
-    //obtenemos una muestra del 30%
-    val trainData = data.sampleFrac(0.3)
-    //print the schema of the data
-    //println(trainData.schema())
-//    println(trainData[1])
-//    println(trainData["gender"])
-
-    // print each value of the column
-    /*    val values = trainData["gender"].values()
-      for (itme in values) {
-           println(itme) //
-       }*/
-    // or this way is the same
-/*    trainData["gender"].values().forEach {
-        println(it)
-    }*/
-
-    //this is the correct way to iterate the csv file
-/*    val groupBy = trainData.groupBy("gender")
-    for (row in groupBy.rows) {
-        println(row) //{id=578, first_name=Salvador, time=2018-12-13 08:54:56, last_name=MacRory, gender=Male, ip_address=108.131.123.75}
-    }*/
-
-    //--------------------------
-    val datePattern = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")
-    val firstTime = trainData["time"].asStrings().first()
-    val parse = LocalDateTime.parse(firstTime,datePattern)
-    println(parse) // test
-
-    //como formatear la time[str] -> hola[LocalDateTime]
-    val trainData2 = trainData.addColumns(
-            ColumnFormula("hola") {it["time"].map<String>{LocalDateTime.parse(it,datePattern)}}
+// Create data-frame in memory
+    var df: DataFrame = dataFrameOf(
+            "first_name", "last_name", "age", "weight")(
+            "Max", "Doe", 0, 55,
+            "Franz", "Smith", 23, 88,
+            "Horst", "Keanes", 12, 70,
+            "", "gomez", 35, 80,
+            "Javier", "gomez", 35, 80,
+            "Javier", "Toro", 20, 90,
+            "Mike", "", 35, 80,
+            "", "", 0, 0
     )
 
-    println(trainData2.schema())
+    //println(df)
+
+
+
+    df = df.cleanUp()
+
+    fun divideWeightByAge(w: Int, a: Int): Double {
+
+        return 1.2
+    }
+
+    // convert Int -> Double
+    df = df.addColumn("age"){ it["age"].map<Double> { it as Double }}
+    df = df.addColumn("weight"){ it["weight"].map<Double> { it as Double }}
+
+    // create a new column Test initialize with 0
+    df = df.addColumn("Test"){ 0}
+
+    //concat 2 String columns
+    df = df.addColumn("full_name") { it["first_name"] + " " + it["last_name"] }
+
+
+    df = df.addColumn("W_A_relation"){
+        df.rows.map { row -> row["weight"] as Double / row["age"]  as Double }
+    }
+  //  df = df.addColumn("f_last_length"){it["last_name"].map<String>{it.length}} // get length of each element in column
+    println(repeatAndCenter("Schema", "-", 70))
+     df.schema() // this print the same as println()
+
+    println(repeatAndCenter("Data Frame", "-", 100))
+    df.print() // this print the same as println()
+
+    println(repeatAndCenter("Summarize", "-", 50))
+    // count columns with the same first name
+    val newdf = df.count( "first_name")
+    newdf.print()
+
 }
 
+/**
+ * function to remove empty strings or ages below 0
+ */
+ fun DataFrame.cleanUp(): DataFrame = filter {  it["age"].greaterThan(0)}
+         .filterByRow { it["first_name"].toString().isNotEmpty()}
+         .filterByRow { it["last_name"].toString().isNotEmpty()}
 
 
+/**
+ * function to center a title in a patten of certain size
+ */
+fun repeatAndCenter(tittle: String, pattern: String, n: Int):String {
+    val vN = if (n - tittle.length > 2) {
+        n - tittle.length
+    } else {
+        tittle.length
+    }
+    val midle = vN / 2
+
+    return pattern.repeat(midle) + tittle + pattern.repeat(midle)
+}
