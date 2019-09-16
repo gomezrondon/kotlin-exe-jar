@@ -5,25 +5,28 @@ import java.io.File
 fun main() {
 
     ///------------ parte 1 indexa
-    val folder = """C:\Users\jrgm\Documents"""
-    //val folder = "C:\\temp"
-    "C:\\CA"
-    //C:\Users\jrgm\Documents
-    val indexFile = File("index.txt")
-    if (indexFile.exists()){
-        indexFile.delete()
+    val folders = listOf<String>("""C:\Users\jrgm\Documents""","""C:\temp""","""C:\CA""")
+
+    folders.forEachIndexed { i, folder ->
+        val f_name = "index_$i.txt"
+        val indexFile = File(f_name)
+        if (indexFile.exists()){
+            indexFile.delete()
+        }
+
+        File(f_name).bufferedWriter().use { out ->
+            File(folder).walkTopDown().filter { it.isFile }.forEach { out.write(it.name +","+ it.absolutePath + "\n") }
+        }
+
     }
 
-    File("index.txt").bufferedWriter().use { out ->
-        File(folder).walkTopDown().filter { it.isFile }.forEach { out.write(it.name +","+ it.absolutePath + "\n") }
-    }
+
   ///------------ parte 2
-    val regexExec ="""^.*angu.*""".toRegex(RegexOption.MULTILINE)
+    /*val regexExec ="""^.*angu.*,""".toRegex(RegexOption.MULTILINE)
 
     val lines = File("index.txt").readLines()
 
-    val search_result = lines.flatMap { regexExec.findAll(it).map { it.value }.toList() }
-            .map { it.replace("* ", "") }
+    val search_result = lines.filter { regexExec.containsMatchIn(it) }
 
     val size = search_result.size
 
@@ -43,8 +46,8 @@ fun main() {
             out.write(line)
 
         }
-        out.write("Num. Results: $size")
-    }
+        out.write("\n\nNum. Results: $size")
+    }*/
 
 }
 
