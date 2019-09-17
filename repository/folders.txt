@@ -1,0 +1,5 @@
+C:\Users\xxx\Documents
+C:\Users\xxx\Downloads
+C:\Users\xxx\Pictures
+C:\temp
+--C:\CA
