@@ -23,9 +23,11 @@ fun main() {
 
 
 private fun indexFiles(folders: List<String>) {
-    folders.forEachIndexed { i, folder ->
-        val f_name = "repository" + File.separator + "index_$i.txt"
-        val f_time = "repository" + File.separator + "time_$i.txt"
+
+    folders.parallelStream().forEach { folder ->
+        val index_name = folder.split("""\""").last().toLowerCase()
+        val f_name = "repository" + File.separator + "index_$index_name.txt"
+        val f_time = "repository" + File.separator + "time_$index_name.txt"
 
         var maxTime = LocalDateTime.MIN
         File(f_name).bufferedWriter().use { out ->
