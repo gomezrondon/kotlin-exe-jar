@@ -16,13 +16,14 @@ fun main() {
 }
 
 private fun parallaleSearch(folders: List<String>, word: String) {
-    var t_list: MutableList<Thread> = mutableListOf<Thread>()
+    var t_list: MutableList<Thread> = mutableListOf()
 
-    folders.forEach {
+    folders.forEach { folder ->
+
         val thread = thread {
             val threadName = Thread.currentThread().name
-            println("folder $it $threadName")
-            search(word, mutableListOf(it))
+            println("folder $folder $threadName")
+            search(word, mutableListOf(folder))
         }
         t_list.add(thread)
     }
