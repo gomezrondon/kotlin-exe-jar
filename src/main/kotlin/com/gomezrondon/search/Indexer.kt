@@ -19,10 +19,11 @@ fun main() {
     }
 
     Executors.newScheduledThreadPool(1).scheduleAtFixedRate(runnable, 1, 60, TimeUnit.SECONDS)
+
 }
 
 
-private fun indexFiles(folders: List<String>) {
+fun indexFiles(folders: List<String>) {
 
     folders.parallelStream().forEach { folder ->
 
@@ -36,9 +37,8 @@ private fun indexFiles(folders: List<String>) {
 
         if (folderHasChanged) {
             indexer(folder)
-            saveMD5(index_name, new_md5)
         }
-
+        saveMD5(index_name, new_md5)
 
     }
 }

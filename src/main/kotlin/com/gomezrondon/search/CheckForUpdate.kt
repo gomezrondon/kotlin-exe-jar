@@ -20,9 +20,11 @@ fun main() {
 
             println(folderHasChanged.toString() + " "+folder)
 
-            if (folderHasChanged) {
+            saveMD5(index_name, new_md5)
+
+/*            if (folderHasChanged) {
                 saveMD5(index_name, new_md5)
-            }
+            }*/
         }
 
         println("Done Indexing!<<<<<<<<<<<<<<<<<<<")
@@ -44,6 +46,9 @@ fun checkFolders(index_name: String, new_md5: String): Boolean {
         if (new_md5 != old_md5) {
             folderHasChanged = true
         }
+    }else{
+        saveMD5(index_name, new_md5)
+        folderHasChanged = true
     }
     return folderHasChanged
 }

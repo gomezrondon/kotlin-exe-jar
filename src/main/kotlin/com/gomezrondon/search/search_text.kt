@@ -6,7 +6,7 @@ import kotlin.concurrent.thread
 fun main() {
 
 
-    val word = "IDP"
+    val word = "javier"
     val  folders = loadFolders()
     //search(word, folders) // run synchronous
     parallaleSearch(folders, word)
@@ -15,7 +15,7 @@ fun main() {
 
 }
 
-private fun parallaleSearch(folders: List<String>, word: String) {
+fun parallaleSearch(folders: List<String>, word: String) {
     var t_list: MutableList<Thread> = mutableListOf()
 
     folders.forEach { folder ->
@@ -31,7 +31,7 @@ private fun parallaleSearch(folders: List<String>, word: String) {
     t_list.parallelStream().forEach { it.join() } // wait for all threads
 }
 
-private fun combineAllResults() {
+fun combineAllResults() {
     val regexExec = """.*search_result_.*txt""".toLowerCase().toRegex(RegexOption.MULTILINE)
     val total_lines = File("repository")
             .listFiles()
