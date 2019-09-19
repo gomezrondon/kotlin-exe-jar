@@ -31,12 +31,12 @@ fun main() {
     Executors.newScheduledThreadPool(1).scheduleAtFixedRate(runnable, 1, 30, TimeUnit.SECONDS)
 }
 
-private fun saveMD5(index_name: String, new_md5: String) {
+fun saveMD5(index_name: String, new_md5: String) {
     val f_name_md5 = "repository" + File.separator + "md5_$index_name.txt"
     File(f_name_md5).writeText(new_md5)
 }
 
-private fun checkFolders(index_name: String, new_md5: String): Boolean {
+fun checkFolders(index_name: String, new_md5: String): Boolean {
     var folderHasChanged = false
     val f_name_md5 = "repository" + File.separator + "md5_$index_name.txt"
     if (File(f_name_md5).exists()) {

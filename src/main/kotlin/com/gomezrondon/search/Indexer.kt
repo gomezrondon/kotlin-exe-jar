@@ -25,23 +25,41 @@ fun main() {
 private fun indexFiles(folders: List<String>) {
 
     folders.parallelStream().forEach { folder ->
-        val index_name = folder.split("""\""").last().toLowerCase()
-        val f_name = "repository" + File.separator + "index_$index_name.txt"
-        val f_time = "repository" + File.separator + "time_$index_name.txt"
 
-        var maxTime = LocalDateTime.MIN
-        File(f_name).bufferedWriter().use { out ->
-            File(folder).walkTopDown().filter { it.isFile }.forEach {
-                val pocLastDate = it.lastModified()
-                val lastUpdateTime = getLocalDateTime(pocLastDate)
-                if (maxTime.isBefore(lastUpdateTime)) {
-                    maxTime = lastUpdateTime
-                }
-                out.write(it.name + "," + it.absolutePath + "," + getDateInStr(pocLastDate) + "\n")
-            }
+        val index_name = folder.split("""\""").last().toLowerCase()
+        getListOfFilesInFolder(folder, index_name)
+        val new_md5 = getMD5(index_name)
+
+        var folderHasChanged = checkFolders(index_name, new_md5)
+
+        println(folderHasChanged.toString() + " "+folder)
+
+        if (folderHasChanged) {
+            indexer(folder)
+            saveMD5(index_name, new_md5)
         }
-        File(f_time).writeText(convertLocalDateToString(maxTime))
+
+
     }
+}
+
+private fun indexer(folder: String) {
+    val index_name = folder.split("""\""").last().toLowerCase()
+    val f_name = "repository" + File.separator + "index_$index_name.txt"
+    val f_time = "repository" + File.separator + "time_$index_name.txt"
+
+    var maxTime = LocalDateTime.MIN
+    File(f_name).bufferedWriter().use { out ->
+        File(folder).walkTopDown().filter { it.isFile }.forEach {
+            val pocLastDate = it.lastModified()
+            val lastUpdateTime = getLocalDateTime(pocLastDate)
+            if (maxTime.isBefore(lastUpdateTime)) {
+                maxTime = lastUpdateTime
+            }
+            out.write(it.name + "," + it.absolutePath + "," + getDateInStr(pocLastDate) + "\n")
+        }
+    }
+    File(f_time).writeText(convertLocalDateToString(maxTime))
 }
 
 
