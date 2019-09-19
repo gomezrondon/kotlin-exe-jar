@@ -6,7 +6,7 @@ import kotlin.concurrent.thread
 fun main() {
 
 
-    val word = "javier"
+    val word = "IDP"
     val  folders = loadFolders()
     //search(word, folders) // run synchronous
     parallaleSearch(folders, word)
