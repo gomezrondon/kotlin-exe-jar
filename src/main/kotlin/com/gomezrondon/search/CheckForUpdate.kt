@@ -12,6 +12,9 @@ fun main() {
         val folders = loadFolders()
 
         folders.forEach { folder ->
+
+
+
             val index_name = folder.split("""\""").last().toLowerCase()
             getListOfFilesInFolder(folder, index_name)
             val new_md5 = getMD5(index_name)

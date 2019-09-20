@@ -93,7 +93,6 @@ private fun write_search_results(search_result: MutableList<String>, outPut: Str
     }
 }
 
-fun loadFolders() = File("repository/folders.txt").readLines().filter { !it.startsWith("--") }
 
 private fun searchInFiles(f_name: String, regexExec: Regex): List<String> {
     val regexExec1 ="""^(.*?),""".toLowerCase().toRegex(RegexOption.MULTILINE) // hasta la primera coma
