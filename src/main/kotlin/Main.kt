@@ -25,6 +25,7 @@ fun main(array: Array<String>) {
 
 private fun indexar(folders: List<String>) {
     val runnable = {
+        println("Start Indexing!")
         indexFiles(folders)
         println("Done Indexing!")
     }
