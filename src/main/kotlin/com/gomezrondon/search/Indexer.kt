@@ -23,11 +23,11 @@ fun main() {
 }
 
 fun loadFolders() = File("repository${File.separator}folders.txt").readLines().filter { !it.startsWith("--") }
-
+fun dontSearchList() = File("repository${File.separator}outPut.txt").readLines().ifEmpty { mutableListOf() }
 
 fun indexFiles(folders: List<String>) {
 
-    folders.parallelStream().forEach { folder ->
+    folders.forEach { folder ->
 
         val index_name = folder.split(File.separator).last().toLowerCase()
         getListOfFilesInFolder(folder, index_name)
@@ -46,12 +46,15 @@ fun indexFiles(folders: List<String>) {
 }
 
 private fun indexer(folder: String) {
+    val noSearchList = dontSearchList()
+
     val index_name = folder.split(File.separator).last().toLowerCase()
     val f_name = "repository" + File.separator + "index_$index_name.txt"
 
     File(f_name).bufferedWriter().use { out ->
         File(folder).walkTopDown().filter { it.isFile }
-                .filter { !it.absolutePath.contains("""C:\CA\portfolio-workbench\client\node_modules""") }.forEach {
+                .filter {  !noSearchList.contains(getPathByLevel(level = 6, path = it.absolutePath)) }
+                .forEach {
             val pocLastDate = it.lastModified()
             val linea  = it.name + "," + it.absolutePath + "," + getDateInStr(pocLastDate) + "\n"
             out.write(linea)
