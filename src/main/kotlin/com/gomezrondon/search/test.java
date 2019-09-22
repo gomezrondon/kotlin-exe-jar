@@ -2,35 +2,50 @@ package com.gomezrondon.search;
 
 import reactor.core.Disposable;
 import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 
 import java.io.IOException;
+import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
+import java.util.List;
 import java.util.stream.BaseStream;
 
 public class test {
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws InterruptedException {
+        String fileName = "repository/output_documents.txt";
+
         Flux<String> stringFlux = null;
         try {
-            stringFlux = readFile("repository/output_temp.txt");
+            stringFlux = readFile(fileName);
         } catch (IOException e) {
             e.printStackTrace();
         }
 
-        stringFlux
+        Mono<List<List<String>>> listMono = stringFlux
                 .skip(3)
                 .filter(x -> x.length() > 0)
-                .skipLast(5)
-                .windowWhile(x -> !x.startsWith("  "))
-                .map(x -> x.map(line -> line.trim()).subscribe(System.out::println))
-                .subscribe(x -> System.out.println(">>>>>>>"));
+                .skipLast(4)
+                .windowWhile(x -> !x.startsWith("   "))
+                .flatMap(x -> x.map(line -> line.trim()).collectList())
+                .collectList();
+        //.subscribe(x -> System.out.println("++++ "+x.toString()));
+
+        List<List<String>> block = listMono.block();
+
+
+        for (List<String> line : block) {
+            System.out.println(line);
+            System.out.println("-----------------------------");
+        }
         System.out.printf(">>>>>>>>");
     }
 
     private static Flux<String> fromPath(Path path) {
-        return Flux.using(() -> Files.lines(path),
+        return Flux.using(() -> Files.lines(path, Charset.forName("Cp1250")),
                 Flux::fromStream,
                 BaseStream::close
         );
