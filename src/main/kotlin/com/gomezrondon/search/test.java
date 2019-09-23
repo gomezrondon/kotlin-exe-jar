@@ -1,6 +1,5 @@
 package com.gomezrondon.search;
 
-import reactor.core.Disposable;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
@@ -9,14 +8,18 @@ import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.nio.file.StandardOpenOption;
 import java.util.List;
 import java.util.stream.BaseStream;
+
+import static com.gomezrondon.search.IndexerKt.loadFolders;
 
 public class test {
 
     public static void main(String[] args) throws InterruptedException {
-        String fileName = "repository/output_documents.txt";
+
+        var folders = loadFolders();
+
+        String fileName = "repository/output_temp.txt";
 
         Flux<String> stringFlux = null;
         try {
