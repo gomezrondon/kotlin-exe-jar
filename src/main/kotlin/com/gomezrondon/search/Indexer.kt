@@ -99,3 +99,29 @@ public fun convertLocalDateToString(ldt: LocalDateTime): String {
 }
 
 
+
+public fun generateIndexFile_2(folder: String, block: List<List<String>>){
+    val folderName = getFolderName(folder)
+    val f_name = "repository" + File.separator + "index_" + folderName + ".txt"
+
+    File(f_name).bufferedWriter().use { out ->
+        block.forEach { line ->
+            val regex = "Directory of "
+            val split = line.stream().findFirst().get().split(regex.toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()
+            val directory = split[1]
+
+            val noSearchList = dontSearchList()
+            val isBlackListed = !noSearchList.contains(getPathByLevel(6, directory))
+
+                line.stream()
+                        .filter({isBlackListed})
+                        .skip(1)
+                        .map({ it.substring(39) + "," + it.substring(0, 20) })
+                        .map({ x -> x.split(",".toRegex()).dropLastWhile({ it.isEmpty() }).toTypedArray() })
+                        .map({ arre -> arre[0] + "," + directory + File.separator + arre[0] + "," + arre[1] + "\n" })
+                        .forEach { out.write(it) }
+
+        } // line
+    }// write out
+
+}

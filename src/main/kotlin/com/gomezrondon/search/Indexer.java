@@ -15,6 +15,7 @@ import java.util.stream.BaseStream;
 import java.util.stream.Collectors;
 
 import static com.gomezrondon.search.IndexerKt.dontSearchList;
+import static com.gomezrondon.search.IndexerKt.generateIndexFile_2;
 import static com.gomezrondon.search.IndexerKt.getFolderName;
 import static com.gomezrondon.search.IndexerKt.loadFolders;
 
@@ -45,14 +46,15 @@ public class Indexer {
                 .flatMap(x -> x.map(String::trim).collectList())
                 .collectList().block();
 
-                generateIndexFile(folder, Objects.requireNonNull(block)); // procesamos
+               // generateIndexFile(folder, Objects.requireNonNull(block)); // procesamos
+                generateIndexFile_2(folder, Objects.requireNonNull(block));
 
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
 
-    private static void generateIndexFile(String folder, List<List<String>> block) throws IOException {
+/*    private static void generateIndexFile(String folder, List<List<String>> block) throws IOException {
 
         String folderName = getFolderName(folder);
         var f_name = "repository" + File.separator + "index_" + folderName + ".txt";
@@ -81,7 +83,7 @@ public class Indexer {
                 e.printStackTrace();
             }
         });
-    }
+    }*/
 
     private static Flux<String> fromPath(Path path) {
         return Flux.using(() -> Files.lines(path, Charset.forName("Cp1250")),
