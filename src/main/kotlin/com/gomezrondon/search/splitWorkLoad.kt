@@ -1,16 +1,16 @@
 package com.gomezrondon.search
 
 import java.io.File
-import java.util.stream.Collectors.groupingBy
+
 
 fun main() {
 
      loadFolders().forEach{folder ->
-         val index_name = folder.split("""\""").last().toLowerCase()
-         val f_name = "repository" + File.separator + "index_$index_name.txt"
+         val index_name = folder.split(File.separator).last().toLowerCase()
+         val f_name = "repository${File.separator}index_$index_name.txt"
 
          val mapLista = getMapOfPaths(f_name)
-         val outPut="repository/outPut.txt"
+         val outPut="repository${File.separator}outPut.txt"
          //File(outPut).writeText("") // reset file
 
          var conta = filterBigFolders(max=1000, mapLista = mapLista, outPut = outPut)

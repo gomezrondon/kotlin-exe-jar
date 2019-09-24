@@ -1,5 +1,6 @@
 package com.gomezrondon.search
 
+import com.gomezrondon.search.test.indexexReactive
 import java.io.File
 import java.text.SimpleDateFormat
 import java.time.LocalDateTime
@@ -27,28 +28,22 @@ fun dontSearchList() = File("repository${File.separator}outPut.txt").readLines()
 
 fun indexFiles(folders: List<String>) {
 
-    folders.forEach { folder ->
-
-        val index_name = folder.split(File.separator).last().toLowerCase()
-        getListOfFilesInFolder(folder, index_name)
-        val new_md5 = getMD5(index_name)
-
-        var folderHasChanged = checkFolders(index_name, new_md5)
-
-        println(folderHasChanged.toString() + " "+folder)
-
-        if (folderHasChanged) {
-            indexer(folder)
-        }
-        saveMD5(index_name, new_md5)
-
+    folders.parallelStream().forEach { folder ->
+        val folderName = getFolderName(folder)
+        getListOfFilesInFolder(folder, folderName)
+        indexexReactive(folder)
     }
+
+/*    folders.forEach { folder ->
+        indexexReactive(folder)
+    }*/
+
 }
 
 private fun indexer(folder: String) {
     val noSearchList = dontSearchList()
 
-    val index_name = folder.split(File.separator).last().toLowerCase()
+    val index_name = getFolderName(folder)
     val f_name = "repository" + File.separator + "index_$index_name.txt"
 
     File(f_name).bufferedWriter().use { out ->
@@ -62,6 +57,8 @@ private fun indexer(folder: String) {
     }
 
 }
+
+public fun getFolderName(folder: String) = folder.split(File.separator).last().toLowerCase()
 
 
 public fun getDateInStr(s: Long): String? {

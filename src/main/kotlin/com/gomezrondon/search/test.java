@@ -1,7 +1,7 @@
 package com.gomezrondon.search;
 
 import reactor.core.publisher.Flux;
-import reactor.core.publisher.Mono;
+
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.Charset;
@@ -10,7 +10,11 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.BaseStream;
+
+import static com.gomezrondon.search.IndexerKt.dontSearchList;
+import static com.gomezrondon.search.IndexerKt.getFolderName;
 import static com.gomezrondon.search.IndexerKt.loadFolders;
 
 public class test {
@@ -19,53 +23,64 @@ public class test {
 
         var folders = loadFolders();
 
-        String fileName = "repository/output_internet explorer.txt";
+        folders.parallelStream().forEach(folder ->{
+            indexexReactive(folder);
+        });
 
-        Flux<String> stringFlux = null;
+        System.out.printf(">>>>>>>>");
+    }
+
+    public static void indexexReactive(String folder) {
+        String folderName = getFolderName(folder);
+        var f_name = "repository" + File.separator + "output_" + folderName + ".txt";
+
+
         try {
-            stringFlux = readFile(fileName);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
-        Mono<List<List<String>>> listMono = stringFlux
+        List<List<String>> block = readFile(f_name)
                 .skip(3)
                 .filter(x -> x.length() > 0)
                 .skipLast(4)
                 .windowWhile(x -> !x.startsWith("   "))
-                .flatMap(x -> x.map(line -> line.trim()).collectList())
-                .collectList();
-        //.subscribe(x -> System.out.println("++++ "+x.toString()));
+                .flatMap(x -> x.map(String::trim).collectList())
+                .collectList().block();
 
-        List<List<String>> block = listMono.block();
+                generateIndexFile(folder, Objects.requireNonNull(block)); // procesamos
 
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private static void generateIndexFile(String folder, List<List<String>> block) throws IOException {
+
+        String folderName = getFolderName(folder);
+        var f_name = "repository" + File.separator + "index_" + folderName + ".txt";
+
+        Files.write(Paths.get(f_name), "".getBytes());
 
         for (List<String> line : block) {
             String regex = "Directory of ";
             String[] split = line.stream().findFirst().get().split(regex);
             String directory = split[1];
 
-            String level = SplitWorkLoadKt.getPathByLevel(6, directory);
-//            Files.write(Paths.get("index_ie.txt"), "".getBytes());
+            var noSearchList = dontSearchList();
+            boolean isBlackListed = !noSearchList.contains(SplitWorkLoadKt.getPathByLevel(6, directory));
 
-            if (level.equals("null")) { // WTF returns a string call null
-                line.stream().skip(1)
-                        .map(x -> x.replaceAll("(\\s){2,20}", " "))
-                        .map(x -> x.split(" "))
-                        .map(arre -> arre[4] + "," + directory + File.separator + arre[4] + "," + arre[0] + " " + arre[1] + " " + arre[2]+"\n")
-                        //.filter(it ->)
-                        .forEach(linea -> {
-                            try {
-                                Files.write(Paths.get("index_ie.txt"), linea.getBytes(), StandardOpenOption.APPEND);
-                            } catch (IOException e) {
-                                e.printStackTrace();
-                            }
-                        });
-            }
-
+            line.stream()
+                    .filter(x -> isBlackListed)
+                    .skip(1)
+                    .map(x -> x.substring(39) +","+ x.substring(0,20))
+                    .map(x -> x.split(","))
+                    .map(arre -> arre[0] + "," + directory + File.separator + arre[0] + "," + arre[1]+"\n")
+                    .forEach(linea -> {
+                        try {
+                            Files.write(Paths.get(f_name), linea.getBytes(), StandardOpenOption.APPEND);
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+                    });
 
         }
-        System.out.printf(">>>>>>>>");
     }
 
     private static Flux<String> fromPath(Path path) {
