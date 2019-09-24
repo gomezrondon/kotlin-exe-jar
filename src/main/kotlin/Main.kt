@@ -5,6 +5,7 @@ import com.gomezrondon.search.parallaleSearch
 import java.io.File
 import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
+import java.util.stream.Collectors
 import kotlin.system.measureTimeMillis
 
 fun main(array: Array<String>) {
@@ -23,10 +24,21 @@ fun main(array: Array<String>) {
             parallaleSearch(folders, word)
             combineAllResults()
         }
+        90 -> { // testing
+            readTextFile()
+        }
         else -> {
             println("Error option equivocada")
         }
     }
+}
+
+fun readTextFile() {
+
+    File("repository").listFiles()
+            .filter { it.name.endsWith(".sql") }
+            .map { it.readLines() }
+            .forEach { println(it) }
 }
 
 fun resetRepository() {
