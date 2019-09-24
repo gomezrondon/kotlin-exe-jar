@@ -12,6 +12,7 @@ import java.nio.file.StandardOpenOption;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.BaseStream;
+import java.util.stream.Collectors;
 
 import static com.gomezrondon.search.IndexerKt.dontSearchList;
 import static com.gomezrondon.search.IndexerKt.getFolderName;
@@ -58,7 +59,7 @@ public class test {
 
         Files.write(Paths.get(f_name), "".getBytes());
 
-        for (List<String> line : block) {
+        block.parallelStream().forEach(line -> {
             String regex = "Directory of ";
             String[] split = line.stream().findFirst().get().split(regex);
             String directory = split[1];
@@ -66,21 +67,20 @@ public class test {
             var noSearchList = dontSearchList();
             boolean isBlackListed = !noSearchList.contains(SplitWorkLoadKt.getPathByLevel(6, directory));
 
-            line.stream()
+            String text = line.stream()
                     .filter(x -> isBlackListed)
                     .skip(1)
-                    .map(x -> x.substring(39) +","+ x.substring(0,20))
+                    .map(x -> x.substring(39) + "," + x.substring(0, 20))
                     .map(x -> x.split(","))
-                    .map(arre -> arre[0] + "," + directory + File.separator + arre[0] + "," + arre[1]+"\n")
-                    .forEach(linea -> {
-                        try {
-                            Files.write(Paths.get(f_name), linea.getBytes(), StandardOpenOption.APPEND);
-                        } catch (IOException e) {
-                            e.printStackTrace();
-                        }
-                    });
+                    .map(arre -> arre[0] + "," + directory + File.separator + arre[0] + "," + arre[1] + "\n")
+                    .collect(Collectors.joining());
 
-        }
+            try {
+                Files.write(Paths.get(f_name), text.getBytes(),StandardOpenOption.APPEND);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        });
     }
 
     private static Flux<String> fromPath(Path path) {

@@ -31,12 +31,19 @@ fun indexFiles(folders: List<String>) {
     folders.parallelStream().forEach { folder ->
         val folderName = getFolderName(folder)
         getListOfFilesInFolder(folder, folderName)
-        indexexReactive(folder)
+        val new_md5 = getMD5(folderName)
+
+        var folderHasChanged = checkFolders(folderName, new_md5)
+
+        println(folderHasChanged.toString() + " "+folder)
+
+        if (folderHasChanged) {
+            indexexReactive(folder) //MUY MUY LENTO!!
+        }
+        saveMD5(folderName, new_md5)
     }
 
-/*    folders.forEach { folder ->
-        indexexReactive(folder)
-    }*/
+
 
 }
 
