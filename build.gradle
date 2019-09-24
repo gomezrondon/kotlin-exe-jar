@@ -50,3 +50,13 @@ jar {
     // files or particular types at will
     from { configurations.compile.collect { it.isDirectory() ? it : zipTree(it) } }
 }
+
+
+task copyFiles{
+    copy{
+        from ('C:\\CA\\test\\kotlin-exe-jar\\build\\libs'){
+
+        }
+        into 'C:\\Users\\jrgm\\ubuntu_temp'
+    }
+}
