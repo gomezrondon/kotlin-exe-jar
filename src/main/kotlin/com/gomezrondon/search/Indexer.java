@@ -18,7 +18,7 @@ import static com.gomezrondon.search.IndexerKt.dontSearchList;
 import static com.gomezrondon.search.IndexerKt.getFolderName;
 import static com.gomezrondon.search.IndexerKt.loadFolders;
 
-public class test {
+public class Indexer {
 
     public static void main(String[] args)  {
 
