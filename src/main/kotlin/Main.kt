@@ -34,10 +34,11 @@ fun main(array: Array<String>) {
 }
 
 fun readTextFile() {
-
+// This is working
     File("repository").listFiles()
             .filter { it.name.endsWith(".sql") }
-            .map { it.readLines() }
+            .flatMap { it.readLines() }
+            .flatMap { """(\w){3,}""".toRegex().findAll(it)?.map { it.value }.toList() }
             .forEach { println(it) }
 }
 
