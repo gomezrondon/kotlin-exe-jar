@@ -20,7 +20,11 @@ fun main(array: Array<String>) {
             combineAllResults()
         }
         3 -> { // Tokenizer
-            readTextFile()
+            readTextFile(folders)
+        }
+        90 -> { // Testing
+            val wordFileList = loadWordFiles()
+            searchInFile(wordFileList)
         }
         else -> {
             println("Error option equivocada")
@@ -28,6 +32,29 @@ fun main(array: Array<String>) {
     }
 }
 
+fun searchInFile(wordFileList: List<File>) {
+
+    val regexExec ="""delete.from.ospos_app_config""".toRegex(RegexOption.MULTILINE)
+
+    wordFileList.filter { it.isFile }.forEach { file ->
+
+        file.walkTopDown()
+                .filter { it.isFile }
+                .map { Paquete(it, it.readLines() )}
+                .filter {
+                    it.lines.filter { line -> regexExec.containsMatchIn(line) }.size > 0
+
+                }
+                .forEach { println(it.lines.get(0)) }
+
+    }
+
+
+
+
+
+
+}
 
 
 fun resetRepository() {
