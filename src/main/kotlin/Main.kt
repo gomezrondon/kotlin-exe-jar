@@ -1,11 +1,7 @@
-import com.gomezrondon.search.combineAllResults
-import com.gomezrondon.search.indexFiles
-import com.gomezrondon.search.loadFolders
-import com.gomezrondon.search.parallaleSearch
+import com.gomezrondon.search.*
 import java.io.File
 import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
-import java.util.stream.Collectors
 import kotlin.system.measureTimeMillis
 
 fun main(array: Array<String>) {
@@ -15,7 +11,6 @@ fun main(array: Array<String>) {
         0 -> { // index files in folders
             resetRepository()
         }
-
         1 -> { // index files in folders
             indexar(folders)
         }
@@ -24,7 +19,7 @@ fun main(array: Array<String>) {
             parallaleSearch(folders, word)
             combineAllResults()
         }
-        90 -> { // testing
+        3 -> { // Tokenizer
             readTextFile()
         }
         else -> {
@@ -33,19 +28,12 @@ fun main(array: Array<String>) {
     }
 }
 
-fun readTextFile() {
-// This is working
-    File("repository").listFiles()
-            .filter { it.name.endsWith(".sql") }
-            .flatMap { it.readLines() }
-            .flatMap { """(\w){3,}""".toRegex().findAll(it)?.map { it.value }.toList() }
-            .forEach { println(it) }
-}
+
 
 fun resetRepository() {
     File("repository").walkTopDown()
             .filter { it.isFile }
-            .filter { it.name.startsWith("md5_") }
+            .filter { it.name.startsWith("md5_") || it.extension == "dat" }
             .forEach {
                 println("DELETING $it !!!")
                     it.delete()
