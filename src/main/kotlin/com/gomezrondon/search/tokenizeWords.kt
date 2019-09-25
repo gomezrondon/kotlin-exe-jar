@@ -5,7 +5,7 @@ import java.io.File
 data class Paquete(val file:File, var lines:List<String> )
 
 fun readTextFile(folders: List<String>) {
-
+    val noSearchList = dontSearchList()
     val textFileList = listOf<String>("txt","sql","java","py","bat","csv","kt","kts")
 
     folders.parallelStream().forEach { folder ->
@@ -13,6 +13,7 @@ fun readTextFile(folders: List<String>) {
         File(folder).walkTopDown()
                 .filter { textFileList.contains(it.extension) }
                 //.take(400) // just one for testing
+                .filter { !noSearchList.contains(getPathByLevel(5, it.absolutePath)) }
                 .map { Paquete(it, it.readLines() )}
                 .map {
                     val wordList =it.lines.flatMap { """(\w){3,}""".toRegex().findAll(it)?.map { it.value }.map { it.toLowerCase() }.toList() }
