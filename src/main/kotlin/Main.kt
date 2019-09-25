@@ -24,7 +24,8 @@ fun main(array: Array<String>) {
         }
         90 -> { // Testing
             val wordFileList = loadWordFiles()
-            searchInFile(wordFileList)
+            val searchWord = "javier gomez"
+            searchInFile(wordFileList, searchWord)
         }
         else -> {
             println("Error option equivocada")
@@ -32,11 +33,13 @@ fun main(array: Array<String>) {
     }
 }
 
-fun searchInFile(wordFileList: List<File>) {
+fun searchInFile(wordFileList: List<File>, searchWord:String) {
 
-    val regexExec ="""delete.from.ospos_app_config""".toRegex(RegexOption.MULTILINE)
+    val toList = """(\w){3,}""".toRegex().findAll(searchWord)?.map { it.value }.map { it.toLowerCase() }.joinToString(".")
 
-    wordFileList.filter { it.isFile }.forEach { file ->
+    val regexExec ="""$toList""".toLowerCase().toRegex(RegexOption.MULTILINE)
+
+    wordFileList.parallelStream().filter { it.isFile }.forEach { file ->
 
         file.walkTopDown()
                 .filter { it.isFile }

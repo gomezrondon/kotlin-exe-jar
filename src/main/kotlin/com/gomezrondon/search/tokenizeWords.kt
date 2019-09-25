@@ -12,7 +12,7 @@ fun readTextFile(folders: List<String>) {
 
         File(folder).walkTopDown()
                 .filter { textFileList.contains(it.extension) }
-                .take(400) // just one for testing
+                //.take(400) // just one for testing
                 .map { Paquete(it, it.readLines() )}
                 .map {
                     val wordList =it.lines.flatMap { """(\w){3,}""".toRegex().findAll(it)?.map { it.value }.map { it.toLowerCase() }.toList() }
@@ -20,7 +20,7 @@ fun readTextFile(folders: List<String>) {
                     it
                 }
                 .forEach {
-                    val name = it.file.name.substringBefore(".")
+                    val name = it.file.absolutePath.md5()
                     val f_name = name + ".dat"
                     wirteToFile(f_name, it)
                 }
