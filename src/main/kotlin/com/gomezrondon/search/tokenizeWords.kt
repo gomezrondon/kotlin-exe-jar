@@ -6,7 +6,7 @@ data class Paquete(val file:File, var lines:List<String> )
 
 fun readTextFile(folders: List<String>) {
 
-    val textFileList = listOf<String>("txt","sql","java","py","bat","csv")
+    val textFileList = listOf<String>("txt","sql","java","py","bat","csv","kt","kts")
 
     folders.parallelStream().forEach { folder ->
 

@@ -24,7 +24,7 @@ fun main(array: Array<String>) {
         }
         90 -> { // Testing
             val wordFileList = loadWordFiles()
-            val searchWord = "javier gomez"
+            val searchWord = "indexer.java"
             searchInFile(wordFileList, searchWord)
         }
         else -> {
@@ -34,7 +34,7 @@ fun main(array: Array<String>) {
 }
 
 fun searchInFile(wordFileList: List<File>, searchWord:String) {
-
+    val noSearchList = dontSearchList()
     val toList = """(\w){3,}""".toRegex().findAll(searchWord)?.map { it.value }.map { it.toLowerCase() }.joinToString(".")
 
     val regexExec ="""$toList""".toLowerCase().toRegex(RegexOption.MULTILINE)
@@ -44,9 +44,9 @@ fun searchInFile(wordFileList: List<File>, searchWord:String) {
         file.walkTopDown()
                 .filter { it.isFile }
                 .map { Paquete(it, it.readLines() )}
+                //.filter { !noSearchList.contains(getPathByLevel(5, it.file.absolutePath)) }
                 .filter {
                     it.lines.filter { line -> regexExec.containsMatchIn(line) }.size > 0
-
                 }
                 .forEach { println(it.lines.get(0)) }
 
