@@ -1,0 +1,23 @@
+//linux
+cd ../..
+
+//Docker
+docker-machine ls
+docker-machine restart default
+#cuando se desconfigura el docker machine, eje: Cannot connect to the Docker daemon
+eval "$(docker-machine env default)"
+
+docker images
+docker ps -a
+docker build -t gomezrondon/spring-config:latest .
+
+docker-compose build
+docker-compose up -d
+docker-compose down
+docker-compose up -d --scale stock=3 --scale db-stock=2
+
+-- remove container
+docker rm <container name>
+docker-compose -f docker-mysql.yml up -d
+docker-compose -f docker-mongo.yml up -d
+docker-compose -f docker-rabbitmq.yml up -d
