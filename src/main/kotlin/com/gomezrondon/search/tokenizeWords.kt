@@ -1,8 +1,23 @@
 package com.gomezrondon.search
 
+import org.bson.Document
 import java.io.File
 
 data class Paquete(val file:File, var lines:List<String> )
+
+
+data class DataFile(val id:String, val type:String = "data-file", val path:String, val lines:List<String>){
+
+    fun getMongoDocument(): Document {
+        val document = Document("doc_id", id)
+                .append("type", type)
+                .append("path", path)
+                .append("text", lines)
+
+        return document
+    }
+}
+
 
 fun readTextFile(folders: List<String>) {
     val noSearchList = dontSearchList()
