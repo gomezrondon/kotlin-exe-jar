@@ -54,37 +54,6 @@ public class Indexer {
         }
     }
 
-/*    private static void generateIndexFile(String folder, List<List<String>> block) throws IOException {
-
-        String folderName = getFolderName(folder);
-        var f_name = "repository" + File.separator + "index_" + folderName + ".txt";
-
-        Files.write(Paths.get(f_name), "".getBytes());
-
-        block.parallelStream().forEach(line -> {
-            String regex = "Directory of ";
-            String[] split = line.stream().findFirst().get().split(regex);
-            String directory = split[1];
-
-            var noSearchList = dontSearchList();
-            boolean isBlackListed = !noSearchList.contains(SplitWorkLoadKt.getPathByLevel(6, directory));
-
-            String text = line.stream()
-                    .filter(x -> isBlackListed)
-                    .skip(1)
-                    .map(x -> x.substring(39) + "," + x.substring(0, 20))
-                    .map(x -> x.split(","))
-                    .map(arre -> arre[0] + "," + directory + File.separator + arre[0] + "," + arre[1] + "\n")
-                    .collect(Collectors.joining());
-
-            try {
-                Files.write(Paths.get(f_name), text.getBytes(),StandardOpenOption.APPEND);
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        });
-    }*/
-
     private static Flux<String> fromPath(Path path) {
         return Flux.using(() -> Files.lines(path, Charset.forName("Cp1250")),
                 Flux::fromStream,

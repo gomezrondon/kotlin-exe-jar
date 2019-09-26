@@ -1,12 +1,14 @@
 package com.gomezrondon.search
 
+import com.mongodb.client.MongoCollection
+import com.mongodb.client.MongoDatabase
 import org.bson.Document
 import java.io.File
 
 data class Paquete(val file:File, var lines:List<String> )
 
 
-data class DataFile(val id:String, val type:String = "data-file", val path:String, val lines:List<String>){
+data class DataFile(val id:String, val type:String = "data-file", val path:String="", val lines:List<String>){
 
     fun getMongoDocument(): Document {
         val document = Document("doc_id", id)
@@ -16,10 +18,23 @@ data class DataFile(val id:String, val type:String = "data-file", val path:Strin
 
         return document
     }
+
+    fun getIdDocument(): Document {
+        return Document("doc_id", id)
+    }
+
+    fun getReplaceLinesDocument():Document {
+        return Document("\$set", Document("text", lines) )
+    }
 }
 
 
 fun readTextFile(folders: List<String>) {
+
+    val conn = MongoDBConnection()
+    val database = conn.database
+    val collection = database.getCollection("documentx")
+
     val noSearchList = dontSearchList()
     val textFileList = listOf<String>("txt","sql","java","py","bat","csv","kt","kts")
 
@@ -39,7 +54,8 @@ fun readTextFile(folders: List<String>) {
                 .forEach {
                     val name = it.file.absolutePath.md5()
                     val f_name = name + ".dat"
-                    wirteToFile(f_name, it)
+                    //wirteToFile(f_name, it)
+                    writeToMongo(f_name, it, collection)
                 }
 
     }
@@ -58,6 +74,48 @@ fun filterBlackListPath(noSearchList: List<String>, it: File): Boolean {
         }
     }
     return exist
+}
+
+
+private fun writeToMongo(f_name: String, it: Paquete, collection: MongoCollection<Document>) {
+    var lineas = mutableListOf<String>()
+    var countLetters = 0
+    var line = StringBuilder("")
+
+    it.lines.forEach { word ->
+        if (countLetters > 1500) {
+            line.append(word + ",")
+            //out.write(line.toString() + "\n")
+            lineas.add(line.toString())
+            line.clear()
+            countLetters = 0
+        } else {
+            line.append(word + ",")
+        }
+        countLetters = line.length
+    }
+    if (line.isNotEmpty()) {
+       // out.write(line.toString())
+        lineas.add(line.toString())
+    }
+
+    // build the document
+    val dataFile = DataFile(id = it.file.absolutePath.toString().md5()
+            ,path = it.file.absolutePath
+            ,lines = lineas )
+
+
+    val iterDoc = collection.findOneAndUpdate(dataFile.getIdDocument(), dataFile.getReplaceLinesDocument())
+
+    if (iterDoc == null ) {
+        //insert the document
+        collection.insertOne(dataFile.getMongoDocument())
+        println("Inserting record: ${dataFile.path}  ${dataFile.id}")
+    }else{
+        println("Updating record: ${dataFile.path}  ${dataFile.id}")
+    }
+
+
 }
 
 private fun wirteToFile(f_name: String, it: Paquete) {
