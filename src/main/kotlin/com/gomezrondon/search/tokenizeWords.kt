@@ -10,10 +10,11 @@ fun readTextFile(folders: List<String>) {
 
     folders.parallelStream().forEach { folder ->
 
-        File(folder).walkTopDown()
+         File(folder).walkTopDown()
                 .filter { textFileList.contains(it.extension) }
                 //.take(400) // just one for testing
-                .filter { !noSearchList.contains(getPathByLevel(5, it.absolutePath)) }
+                //.filter { !noSearchList.contains(getPathByLevel(5, it.absolutePath)) }
+                .filter{filterBlackListPath(noSearchList, it) }
                 .map { Paquete(it, it.readLines() )}
                 .map {
                     val wordList =it.lines.flatMap { """(\w){3,}""".toRegex().findAll(it)?.map { it.value }.map { it.toLowerCase() }.toList() }
@@ -32,6 +33,16 @@ fun readTextFile(folders: List<String>) {
 
 
     println("Finish 90 test...")
+}
+
+fun filterBlackListPath(noSearchList: List<String>, it: File): Boolean {
+    var exist = true
+    for (dir: String in noSearchList) {
+        if (it.absolutePath.startsWith(dir)) {
+            exist = false
+        }
+    }
+    return exist
 }
 
 private fun wirteToFile(f_name: String, it: Paquete) {

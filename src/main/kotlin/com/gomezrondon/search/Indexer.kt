@@ -57,7 +57,8 @@ private fun indexer(folder: String) {
 
     File(f_name).bufferedWriter().use { out ->
         File(folder).walkTopDown().filter { it.isFile }
-                .filter {  !noSearchList.contains(getPathByLevel(level = 6, path = it.absolutePath)) }
+               // .filter {  !noSearchList.contains(getPathByLevel(level = 6, path = it.absolutePath)) }
+                .filter{filterBlackListPath(noSearchList, it) }
                 .forEach {
             val pocLastDate = it.lastModified()
             val linea  = it.name + "," + it.absolutePath + "," + getDateInStr(pocLastDate) + "\n"
@@ -113,9 +114,9 @@ public fun generateIndexFile_2(folder: String, block: List<List<String>>){
             val directory = split[1]
 
             val noSearchList = dontSearchList()
-            val isBlackListed = !noSearchList.contains(getPathByLevel(6, directory))
+            val isBlackListed = filterBlackListPath(noSearchList, File(directory))
 
-                line.stream()
+            line.stream()
                         .filter({isBlackListed})
                         .skip(1)
                         .map({ it.substring(39) + "," + it.substring(0, 20) })

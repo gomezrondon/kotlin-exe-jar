@@ -52,11 +52,6 @@ fun searchInFile(wordFileList: List<File>, searchWord:String) {
 
     }
 
-
-
-
-
-
 }
 
 
