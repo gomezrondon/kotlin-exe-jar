@@ -10,7 +10,7 @@ fun main() {
          val f_name = "repository${File.separator}index_$index_name.txt"
 
          val mapLista = getMapOfPaths(f_name)
-         val outPut="repository${File.separator}outPut.txt"
+         val outPut="repository${File.separator}black-list.txt"
          //File(outPut).writeText("") // reset file
 
          var conta = filterBigFolders(max=1000, mapLista = mapLista, outPut = outPut)

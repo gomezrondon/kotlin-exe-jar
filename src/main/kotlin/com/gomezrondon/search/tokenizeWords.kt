@@ -36,7 +36,7 @@ fun readTextFile(folders: List<String>) {
     val collection = database.getCollection("documentx")
 
     val noSearchList = dontSearchList()
-    val textFileList = listOf<String>("txt","sql","java","py","bat","csv","kt","kts")
+    val textFileList = listOf("txt","sql","java","py","bat","csv","kt","kts")
 
     folders.parallelStream().forEach { folder ->
 

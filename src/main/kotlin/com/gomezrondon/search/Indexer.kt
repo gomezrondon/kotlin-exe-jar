@@ -23,8 +23,8 @@ fun main() {
 
 }
 
-fun loadFolders() = File("repository${File.separator}folders.txt").readLines().filter { !it.startsWith("--") }
-fun dontSearchList() = File("repository${File.separator}outPut.txt").readLines().ifEmpty { mutableListOf() }
+fun loadFolders() = File("repository${File.separator}white-list.txt").readLines().filter { !it.startsWith("--") }
+fun dontSearchList() = File("repository${File.separator}black-list.txt").readLines().ifEmpty { mutableListOf() }
 fun loadWordFiles() = File("repository${File.separator}words").listFiles().asList()
 
 
