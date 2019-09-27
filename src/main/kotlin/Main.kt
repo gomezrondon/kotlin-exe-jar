@@ -10,28 +10,33 @@ import kotlin.system.measureTimeMillis
 fun main(array: Array<String>) {
     val folders = loadFolders()
 
-    when(array[0].toInt()) {
-        0 -> { // index files in folders
+    val x:Any = array[0]
+
+    when(x) {
+        "0" -> { // index files in folders
             resetRepository()
         }
-        1 -> { // index files in folders
+        "1" -> { // index files in folders
             indexar(folders)
         }
-        2 -> { // search
+        "2" -> { // search
             val word = array[1]
             parallaleSearch(folders, word)
             combineAllResults()
         }
-        3 -> { // Tokenizer
+        "3" -> { // Tokenizer
             createMongoIdexes()
             readTextFile(folders)
             readBinaryfiles(folders)
         }
-        4 -> { // search inside a text file
+        "3.1" ->{
+            readBinaryfiles(folders)
+        }
+        "4" -> { // search inside a text file
             val word = array[1]
             searchInFile( word)
         }
-        91 ->{
+        "91" ->{
             val word = "Mongo"
             searchByFileName(word)
         }

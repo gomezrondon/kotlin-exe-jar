@@ -1,10 +1,10 @@
 package com.gomezrondon.search
 
 import com.mongodb.client.MongoCollection
-import com.mongodb.client.model.Filters
-import com.mongodb.client.model.Indexes
+import com.mongodb.client.model.*
 import org.bson.Document
 import java.io.File
+import java.util.ArrayList
 
 data class Paquete(val file:File, var lines:List<String> )
 
@@ -40,8 +40,11 @@ fun readBinaryfiles(folders: List<String>) {
 
     collection.deleteMany(Filters.eq("type", "binary-file"))
 
-    folders.parallelStream().forEach { folder ->
+    val bulkWriteOptions = BulkWriteOptions().ordered(false)
 
+
+    folders.parallelStream().forEach { folder ->
+        val documents = ArrayList<WriteModel<Document>>()
         File(folder).walkTopDown()
                 .filter { textFileList.contains(it.extension.toLowerCase()) }
                 .filter{filterBlackListPath(noSearchList, it) }
@@ -52,10 +55,18 @@ fun readBinaryfiles(folders: List<String>) {
                             ,path = it.absolutePath.toLowerCase()
                             ,lines = listOf() )
 
-                    collection.insertOne(dataFile.getMongoDocument())
-                    println("Inserting record: ${dataFile.path}  ${dataFile.id}")
+                    //collection.insertOne(dataFile.getMongoDocument())
+                    documents.add(InsertOneModel(dataFile.getMongoDocument()))
+                   // println("Inserting record: ${dataFile.path}  ${dataFile.id}")
                 }
+
+        if (documents.isNotEmpty()) {
+            collection.bulkWrite(documents, bulkWriteOptions)
+        }
+
     }
+
+
     println("Finish 90 test...")
 }
 
