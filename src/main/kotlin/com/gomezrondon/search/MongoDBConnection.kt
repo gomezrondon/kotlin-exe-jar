@@ -7,6 +7,8 @@ import com.mongodb.MongoCredential
 import com.mongodb.client.FindIterable
 import org.bson.Document
 import com.mongodb.client.model.Filters.eq
+import com.mongodb.client.model.Filters.regex
+import com.mongodb.client.model.Projections
 
 //https://www.tutorialspoint.com/mongodb/mongodb_java.htm
 // http://zetcode.com/java/mongodb/  (como borrar)
@@ -82,16 +84,16 @@ class MongoDBConnection {
             //-------------------------- how to update a document a especific field
             /*
         // esto funciona
-        collection.updateOne(new Document("title", "dat-file"), new Document("$set", new Document("text", list)));
+        collection.updateOne(new Document("title", "dat-file"), new Document("$set", new Document("doc_texto", list)));
 */
 
             //--------------------------- find one and update if exist
 
-            val collection = database.getCollection("documentx")
+/*            val collection = database.getCollection("documentx")
 
             val dataFile = DataFile(id = "9193bebd983e5b9384a2491fcdceacaa",  lines = listOf<String>("Pepe"))
 
-           // val iterDoc = collection.findOneAndUpdate(Document("doc_id", "9193bebd983e5b9384a2491fcdceacaa"), Document("\$set", Document("text", "A")))
+           // val iterDoc = collection.findOneAndUpdate(Document("doc_id", "9193bebd983e5b9384a2491fcdceacaa"), Document("\$set", Document("doc_texto", "A")))
             val iterDoc = collection.findOneAndUpdate(dataFile.getIdDocument(), dataFile.getReplaceLinesDocument())
 
             if (iterDoc == null ) {
@@ -99,8 +101,44 @@ class MongoDBConnection {
             }else{
                 println("iterDoc.size: ${iterDoc.size}")
                 iterDoc.forEach { println(it) }
-            }
+            }*/
 
+            //--------------------------- Search text -- Funciona OK
+/*
+            val collection = database.getCollection("documentx")
+            //val iterDoc = collection.find(Document("\$text", Document("\$search", "javier")))
+            val iterDoc = collection.find(Document("\$text", Document("\$search", "\"javier gomez\""))).limit(10) // funcion ojo son las comillas
+            iterDoc.forEach { println(it) }
+*/
+
+
+            //--------------------------- find by a specific field
+/*            val collection = database.getCollection("documentx")
+            val findIterable = collection.find(eq("path", "C:\\temp\\dockerfile\\service\\test\\test.txt"))
+            findIterable.forEach { println(it) }
+            */
+
+            //---------------- Select All Documents in a Collection
+           // https://docs.mongodb.com/manual/tutorial/query-documents/
+/*
+            val collection = database.getCollection("documentx")
+            val findIterable = collection.find(Document()).limit(10)
+            findIterable.forEach { println(it) }
+*/
+//------------------------- find with regex
+/*
+            val collection = database.getCollection("documentx")
+            val findIterable = collection.find(regex("path",".*py$")).limit(10) //busqueda por extension del archivo
+            findIterable.forEach { println(it) }
+*/
+
+            // -------------------- dellete all element
+            //collection.deleteMany(Document())
+
+            //--------------------- how to query and return only the 2 fields
+            val collection = database.getCollection("documentx")
+            val findIterable = collection.find().projection(Projections.include("path","doc_id")).limit(10)
+            findIterable.forEach { println(it) }
 
         }
     }

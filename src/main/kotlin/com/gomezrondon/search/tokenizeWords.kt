@@ -14,7 +14,7 @@ data class DataFile(val id:String, val type:String = "data-file", val path:Strin
         val document = Document("doc_id", id)
                 .append("type", type)
                 .append("path", path)
-                .append("text", lines)
+                .append("doc_texto", lines)
 
         return document
     }
@@ -24,7 +24,7 @@ data class DataFile(val id:String, val type:String = "data-file", val path:Strin
     }
 
     fun getReplaceLinesDocument():Document {
-        return Document("\$set", Document("text", lines) )
+        return Document("\$set", Document("doc_texto", lines) )
     }
 }
 
@@ -83,14 +83,14 @@ private fun writeToMongo(f_name: String, it: Paquete, collection: MongoCollectio
     var line = StringBuilder("")
 
     it.lines.forEach { word ->
-        if (countLetters > 1500) {
-            line.append(word + ",")
+        if (countLetters > 500) {
+            line.append(word + " ")
             //out.write(line.toString() + "\n")
             lineas.add(line.toString())
             line.clear()
             countLetters = 0
         } else {
-            line.append(word + ",")
+            line.append(word + " ")
         }
         countLetters = line.length
     }
