@@ -9,6 +9,18 @@ import org.bson.Document
 import com.mongodb.client.model.Filters.eq
 import com.mongodb.client.model.Filters.regex
 import com.mongodb.client.model.Projections
+import com.mongodb.client.model.Filters
+import com.mongodb.client.model.InsertOneModel
+import com.mongodb.client.model.Sorts
+import java.util.*
+import java.util.ArrayList
+import com.mongodb.client.model.WriteModel
+import com.mongodb.client.model.BulkWriteOptions
+
+
+
+
+
 
 //https://www.tutorialspoint.com/mongodb/mongodb_java.htm
 // http://zetcode.com/java/mongodb/  (como borrar)
@@ -114,9 +126,9 @@ class MongoDBConnection {
 
             //--------------------------- find by a specific field
 /*            val collection = database.getCollection("documentx")
-            val findIterable = collection.find(eq("path", "C:\\temp\\dockerfile\\service\\test\\test.txt"))
-            findIterable.forEach { println(it) }
-            */
+            //val findIterable = collection.find(eq("path", "C:\\temp\\dockerfile\\service\\test\\test.txt"))
+            val findIterable = collection.find(eq("type", "binary-file"))
+            findIterable.forEach { println(it) }*/
 
             //---------------- Select All Documents in a Collection
            // https://docs.mongodb.com/manual/tutorial/query-documents/
@@ -136,9 +148,44 @@ class MongoDBConnection {
             //collection.deleteMany(Document())
 
             //--------------------- how to query and return only the 2 fields
-            val collection = database.getCollection("documentx")
+/*            val collection = database.getCollection("documentx")
             val findIterable = collection.find().projection(Projections.include("path","doc_id")).limit(10)
-            findIterable.forEach { println(it) }
+            findIterable.forEach { println(it) }*/
+
+            //--------------------- Search
+           // Capture 2019-09-23
+/*            val collection = database.getCollection("documentx")
+           // val findIterable = collection.find(regex("path",".*public.*".toLowerCase())).projection(Projections.include("path","doc_id")).limit(10)
+            val findIterable = collection.find(regex("path",".*pictures.*".toLowerCase())).projection(Projections.include("path","doc_id")).limit(10)
+            findIterable.forEach { println(it) }*/
+
+            //--------------------- find all indexes
+/*            val collection = database.getCollection("documentx")
+            val listIndexes = collection.listIndexes()
+
+            listIndexes.forEach {
+                for ((k,v) in it) {
+                    if (k == "name" && v == "doc_texto_index") {
+                        println("K: $k value: $v")
+                    }
+                }
+            }*/
+            //--------------------- do a simple search
+            //https://mongodb.github.io/mongo-java-driver/3.6/driver/tutorials/text-search/
+            val collection = database.getCollection("documentx")
+/*            val matchCount = collection.count(Filters.text("javier gomez"))
+            println("Text search matches: $matchCount")*/
+
+            // ------------- do a bulk insert -- funcona
+            //https://mongodb.github.io/mongo-java-driver/3.6/driver/tutorials/bulk-writes/
+            val bulkWriteOptions = BulkWriteOptions().ordered(false)
+            val documents = ArrayList<WriteModel<Document>>()
+            for (i in 1..10) {
+                val document = DataFile("e4eabfa613cbc5cf8bb20146dc1ea9fd", "test-borrar", "C:\\temp\\salida.txt", listOf("hola", "mundo")).getMongoDocument()
+                documents.add(InsertOneModel(document))
+            }
+             collection.bulkWrite(documents, bulkWriteOptions)
+
 
         }
     }

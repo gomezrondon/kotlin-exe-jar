@@ -1,7 +1,8 @@
 package com.gomezrondon.search
 
 import com.mongodb.client.MongoCollection
-import com.mongodb.client.MongoDatabase
+import com.mongodb.client.model.Filters
+import com.mongodb.client.model.Indexes
 import org.bson.Document
 import java.io.File
 
@@ -29,11 +30,38 @@ data class DataFile(val id:String, val type:String = "data-file", val path:Strin
 }
 
 
+
+
+fun readBinaryfiles(folders: List<String>) {
+    val collection = mongoCollection()
+
+    val noSearchList = dontSearchList()
+    val textFileList = listOf("png", "jpg","jpeg","mp3")
+
+    collection.deleteMany(Filters.eq("type", "binary-file"))
+
+    folders.parallelStream().forEach { folder ->
+
+        File(folder).walkTopDown()
+                .filter { textFileList.contains(it.extension.toLowerCase()) }
+                .filter{filterBlackListPath(noSearchList, it) }
+                .forEach {
+                    // build the document
+                    val dataFile = DataFile(id = it.absolutePath.toString().md5()
+                            ,type = "binary-file"
+                            ,path = it.absolutePath.toLowerCase()
+                            ,lines = listOf() )
+
+                    collection.insertOne(dataFile.getMongoDocument())
+                    println("Inserting record: ${dataFile.path}  ${dataFile.id}")
+                }
+    }
+    println("Finish 90 test...")
+}
+
 fun readTextFile(folders: List<String>) {
 
-    val conn = MongoDBConnection()
-    val database = conn.database
-    val collection = database.getCollection("documentx")
+    val collection = mongoCollection()
 
     val noSearchList = dontSearchList()
     val textFileList = listOf("txt","sql","java","py","bat","csv","kt","kts")
@@ -59,11 +87,38 @@ fun readTextFile(folders: List<String>) {
                 }
 
     }
-
-
-
-
     println("Finish 90 test...")
+}
+
+fun mongoCollection(): MongoCollection<Document> {
+    val conn = MongoDBConnection()
+    val database = conn.database
+    val collection = database.getCollection("documentx")
+    return collection
+}
+
+fun createMongoIdexes() {
+    val collection = mongoCollection()
+
+    val listIndexes = collection.listIndexes()
+
+    var indexExist = false
+    listIndexes.forEach {
+        for ((k,v) in it) {
+           // println("K: $k value: $v")
+            if (k == "name" && v == "doc_texto_text") {
+                indexExist= true
+                println("Index: $v  Exist!")
+            }
+        }
+    }
+
+    if (!indexExist) {
+        collection.createIndex(Indexes.text("doc_texto"))
+        println("Index: doc_texto_text Created!")
+    }
+
+
 }
 
 fun filterBlackListPath(noSearchList: List<String>, it: File): Boolean {
@@ -101,7 +156,7 @@ private fun writeToMongo(f_name: String, it: Paquete, collection: MongoCollectio
 
     // build the document
     val dataFile = DataFile(id = it.file.absolutePath.toString().md5()
-            ,path = it.file.absolutePath
+            ,path = it.file.absolutePath.toLowerCase()
             ,lines = lineas )
 
 
