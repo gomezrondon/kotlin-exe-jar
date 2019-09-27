@@ -2,9 +2,11 @@ package com.gomezrondon.search
 
 import com.mongodb.client.MongoCollection
 import com.mongodb.client.model.*
+import com.mongodb.client.model.Filters.regex
 import org.bson.Document
 import java.io.File
 import java.util.ArrayList
+import java.util.stream.Collectors
 
 data class Paquete(val file:File, var lines:List<String> )
 
@@ -31,6 +33,47 @@ data class DataFile(val id:String, val type:String = "data-file", val path:Strin
 
 
 
+fun indexOnlyByfileNme(folders: List<String>) {
+    val collection = mongoCollection()
+
+    val noSearchList = dontSearchList()
+    //val textFileList = listOf("txt","sql","java","py","bat","csv","kt","kts","png", "jpg","jpeg","mp3")
+
+    val bulkWriteOptions = BulkWriteOptions().ordered(false)
+
+
+
+
+    //folders.parallelStream().forEach { folder ->
+    folders.forEach { folder ->
+        val documents = ArrayList<WriteModel<Document>>()
+        var word = "^$folder.*".replace("""\""","""\\""").toLowerCase()
+        val existList: List<String> = collection.find(regex("path", word)).projection(Projections.include("doc_id")).map { it.get("doc_id") as String }.toList()
+
+
+        File(folder).walkTopDown()
+                //.filter { textFileList.contains(it.extension.toLowerCase()) }
+                .filter{filterBlackListPath(noSearchList, it) }
+                .filter { !existList.contains(it.absolutePath.toString().md5()) }
+                .forEach {
+                    // build the document
+                    val dataFile = DataFile(id = it.absolutePath.toString().md5()
+                            ,path = it.absolutePath.toLowerCase()
+                            ,lines = listOf() )
+                    documents.add(InsertOneModel(dataFile.getMongoDocument()))
+                }
+
+        if (documents.isNotEmpty()) {
+            collection.bulkWrite(documents, bulkWriteOptions)
+            println("Buck Insert of: $folder")
+        }
+
+    }
+
+    println("Finish readBinaryfiles...")
+}
+
+/*
 
 fun readBinaryfiles(folders: List<String>) {
     val collection = mongoCollection()
@@ -66,9 +109,9 @@ fun readBinaryfiles(folders: List<String>) {
 
     }
 
-
-    println("Finish 90 test...")
+    println("Finish readBinaryfiles...")
 }
+*/
 
 fun readTextFile(folders: List<String>) {
 

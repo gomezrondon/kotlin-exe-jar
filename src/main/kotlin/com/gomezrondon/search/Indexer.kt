@@ -31,6 +31,7 @@ fun loadWordFiles() = File("repository${File.separator}words").listFiles().asLis
 fun indexFiles(folders: List<String>) {
 
     folders.parallelStream().forEach { folder ->
+  //  folders.forEach { folder ->
         val folderName = getFolderName(folder)
         getListOfFilesInFolder(folder, folderName)
         val new_md5 = getMD5(folderName)
@@ -40,7 +41,8 @@ fun indexFiles(folders: List<String>) {
         println(folderHasChanged.toString() + " "+folder)
 
         if (folderHasChanged) {
-            indexexReactive(folder) //MUY MUY LENTO!!
+            indexOnlyByfileNme(listOf(folder)) // write to mongo
+           // indexexReactive(folder) //MUY MUY LENTO!!
         }
         saveMD5(folderName, new_md5)
     }
