@@ -26,29 +26,52 @@ import com.mongodb.client.model.BulkWriteOptions
 // http://zetcode.com/java/mongodb/  (como borrar)
 class MongoDBConnection {
 
-    private val mongo: MongoClient
+    /* private val mongo: MongoClient
 
-    // Accessing the database
-    val database: MongoDatabase
-        get() = mongo.getDatabase("testDb")
 
-    init {
-        // Creating a Mongo client
-        mongo = MongoClient("localhost", 27017)
 
-        // Creating Credentials
-        val credential: MongoCredential
-        credential = MongoCredential.createCredential("sampleUser", "testDb", "password".toCharArray())
-        println("Connected to the database successfully")
-        println("Credentials ::$credential")
-    }
+     // Accessing the database
+     val database: MongoDatabase
+         get() = mongo.getDatabase("testDb")
+
+     init {
+         // Creating a Mongo client
+         mongo = MongoClient("192.168.99.100", 27017)
+
+         // Creating Credentials
+         val credential: MongoCredential
+         credential = MongoCredential.createCredential("sampleUser", "testDb", "password".toCharArray())
+         println("Connected to the database successfully")
+         println("Credentials ::$credential")
+
+     }*/
 
     companion object {
+        var mongo: MongoClient = MongoClient("192.168.99.100", 27017)
+        var iniOne: String? = null
+        fun getMongoClientConnection():MongoClient {
+
+            if (iniOne == null) {
+                // Creating Credentials
+                val credential: MongoCredential
+                credential = MongoCredential.createCredential("sampleUser", "testDb", "password".toCharArray())
+                println("Connected to the database successfully")
+                println("Credentials ::$credential")
+                iniOne = "done"
+            }
+
+          return mongo
+        }
+
+        fun getDataBase2():MongoDatabase {
+            return getMongoClientConnection().getDatabase("testDb")
+        }
+
 
         @JvmStatic
         fun main(args: Array<String>) {
-            val conn = MongoDBConnection()
-            val database = conn.database
+           // val conn = MongoDBConnection()
+            val database = getDataBase2()
             // database.createCollection("documentx"); // solo se ejecuta 1 vez
             //System.out.println("Collection created successfully");
 

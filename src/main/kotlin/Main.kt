@@ -82,8 +82,9 @@ private fun indexar(folders: List<String>) {
             indexFiles(folders) // write to a file
             println("Done Indexing!")
         }
-        println("Exe. Time: $time ${LocalDateTime.now()}")
+        println("Exe. Time: $time ${LocalDateTime.now()} \n\n")
+
 
     }
-    Executors.newScheduledThreadPool(1).scheduleAtFixedRate(runnable, 1, 120, TimeUnit.SECONDS)
+    Executors.newScheduledThreadPool(1).scheduleAtFixedRate(runnable, 1, 30, TimeUnit.SECONDS)
 }

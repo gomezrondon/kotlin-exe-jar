@@ -1,12 +1,14 @@
 package com.gomezrondon.search
 
+import com.gomezrondon.search.MongoDBConnection.Companion.getDataBase2
+import com.gomezrondon.search.MongoDBConnection.Companion.getMongoClientConnection
 import com.mongodb.client.MongoCollection
 import com.mongodb.client.model.*
 import com.mongodb.client.model.Filters.regex
 import org.bson.Document
 import java.io.File
 import java.util.ArrayList
-import java.util.stream.Collectors
+
 
 data class Paquete(val file:File, var lines:List<String> )
 
@@ -32,6 +34,13 @@ data class DataFile(val id:String, val type:String = "data-file", val path:Strin
 }
 
 
+fun mongoCollection(): MongoCollection<Document> {
+//    val conn = getMongoClientConnection()
+    val database = getDataBase2()
+    val collection = database.getCollection("documentx")
+    return collection
+}
+
 
 fun indexOnlyByfileNme(folders: List<String>) {
     val collection = mongoCollection()
@@ -44,8 +53,8 @@ fun indexOnlyByfileNme(folders: List<String>) {
 
 
 
-    //folders.parallelStream().forEach { folder ->
-    folders.forEach { folder ->
+    folders.parallelStream().forEach { folder ->
+    //folders.forEach { folder ->
         val documents = ArrayList<WriteModel<Document>>()
         var word = "^$folder.*".replace("""\""","""\\""").toLowerCase()
         val existList: List<String> = collection.find(regex("path", word)).projection(Projections.include("doc_id")).map { it.get("doc_id") as String }.toList()
@@ -66,6 +75,7 @@ fun indexOnlyByfileNme(folders: List<String>) {
         if (documents.isNotEmpty()) {
             collection.bulkWrite(documents, bulkWriteOptions)
             println("Buck Insert of: $folder")
+
         }
 
     }
@@ -144,12 +154,7 @@ fun readTextFile(folders: List<String>) {
     println("Finish 90 test...")
 }
 
-fun mongoCollection(): MongoCollection<Document> {
-    val conn = MongoDBConnection()
-    val database = conn.database
-    val collection = database.getCollection("documentx")
-    return collection
-}
+
 
 fun createMongoIdexes() {
     val collection = mongoCollection()

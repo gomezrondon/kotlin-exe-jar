@@ -1,6 +1,6 @@
 //linux
 cd ../..
-
+192.168.99.100
 //Docker
 docker-machine ls
 docker-machine restart default

@@ -31,7 +31,7 @@ fun loadWordFiles() = File("repository${File.separator}words").listFiles().asLis
 fun indexFiles(folders: List<String>) {
 
     folders.parallelStream().forEach { folder ->
-  //  folders.forEach { folder ->
+//    folders.forEach { folder ->
         val folderName = getFolderName(folder)
         getListOfFilesInFolder(folder, folderName)
         val new_md5 = getMD5(folderName)
