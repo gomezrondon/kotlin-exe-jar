@@ -93,4 +93,19 @@ private fun indexar(folders: List<String>) {
 
     }
     Executors.newScheduledThreadPool(1).scheduleAtFixedRate(runnable, 1, 30, TimeUnit.SECONDS)
+
+
+    val runnable2 = {
+
+        createMongoIdexes()
+        val time = measureTimeMillis {
+            println("Start Reading Text files! ${LocalDateTime.now()}")
+            readTextFile(folders)
+            println("Done Reading!")
+        }
+        println("Exe. Time: $time ${LocalDateTime.now()} \n\n")
+
+    }
+    Executors.newScheduledThreadPool(1).scheduleAtFixedRate(runnable2,  15, 300, TimeUnit.SECONDS)//5 min
+
 }
