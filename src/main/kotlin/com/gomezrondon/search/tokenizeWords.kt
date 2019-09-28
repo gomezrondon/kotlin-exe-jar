@@ -1,9 +1,9 @@
 package com.gomezrondon.search
 
 import com.gomezrondon.search.MongoDBConnection.Companion.getDataBase2
-import com.gomezrondon.search.MongoDBConnection.Companion.getMongoClientConnection
 import com.mongodb.client.MongoCollection
 import com.mongodb.client.model.*
+
 import com.mongodb.client.model.Filters.regex
 import org.bson.Document
 import java.io.File
@@ -35,7 +35,6 @@ data class DataFile(val id:String, val type:String = "data-file", val path:Strin
 
 
 fun mongoCollection(): MongoCollection<Document> {
-//    val conn = getMongoClientConnection()
     val database = getDataBase2()
     val collection = database.getCollection("documentx")
     return collection
@@ -49,9 +48,6 @@ fun indexOnlyByfileNme(folders: List<String>) {
     //val textFileList = listOf("txt","sql","java","py","bat","csv","kt","kts","png", "jpg","jpeg","mp3")
 
     val bulkWriteOptions = BulkWriteOptions().ordered(false)
-
-
-
 
     folders.parallelStream().forEach { folder ->
     //folders.forEach { folder ->
@@ -83,56 +79,22 @@ fun indexOnlyByfileNme(folders: List<String>) {
     println("Finish readBinaryfiles...")
 }
 
-/*
-
-fun readBinaryfiles(folders: List<String>) {
-    val collection = mongoCollection()
-
-    val noSearchList = dontSearchList()
-    val textFileList = listOf("png", "jpg","jpeg","mp3")
-
-    collection.deleteMany(Filters.eq("type", "binary-file"))
-
-    val bulkWriteOptions = BulkWriteOptions().ordered(false)
-
-
-    folders.parallelStream().forEach { folder ->
-        val documents = ArrayList<WriteModel<Document>>()
-        File(folder).walkTopDown()
-                .filter { textFileList.contains(it.extension.toLowerCase()) }
-                .filter{filterBlackListPath(noSearchList, it) }
-                .forEach {
-                    // build the document
-                    val dataFile = DataFile(id = it.absolutePath.toString().md5()
-                            ,type = "binary-file"
-                            ,path = it.absolutePath.toLowerCase()
-                            ,lines = listOf() )
-
-                    //collection.insertOne(dataFile.getMongoDocument())
-                    documents.add(InsertOneModel(dataFile.getMongoDocument()))
-                   // println("Inserting record: ${dataFile.path}  ${dataFile.id}")
-                }
-
-        if (documents.isNotEmpty()) {
-            collection.bulkWrite(documents, bulkWriteOptions)
-        }
-
-    }
-
-    println("Finish readBinaryfiles...")
-}
-*/
 
 fun readTextFile(folders: List<String>) {
 
+    val bulkWriteOptions = BulkWriteOptions().ordered(false)
     val collection = mongoCollection()
 
     val noSearchList = dontSearchList()
     val textFileList = listOf("txt","sql","java","py","bat","csv","kt","kts")
 
     folders.parallelStream().forEach { folder ->
+        val documents = ArrayList<WriteModel<Document>>()
+        var word = "^$folder.*".replace("""\""","""\\""").toLowerCase()
+        val existList: List<String> = collection.find(regex("path", word)).projection(Projections.include("doc_id")).map { it.get("doc_id") as String }.toList()
 
-         File(folder).walkTopDown()
+
+        File(folder).walkTopDown()
                 .filter { textFileList.contains(it.extension) }
                 //.take(400) // just one for testing
                 //.filter { !noSearchList.contains(getPathByLevel(5, it.absolutePath)) }
@@ -147,16 +109,62 @@ fun readTextFile(folders: List<String>) {
                     val name = it.file.absolutePath.md5()
                     val f_name = name + ".dat"
                     //wirteToFile(f_name, it)
-                    writeToMongo(f_name, it, collection)
+                    val bulk: WriteModel<Document> = writeToMongo(f_name, it, collection, existList)
+                    documents.add(bulk)
                 }
 
+        if (documents.isNotEmpty()) {
+            collection.bulkWrite(documents, bulkWriteOptions)
+            println("Buck Insert of: $folder")
+        }
+
     }
-    println("Finish 90 test...")
+    println("Finish readTextFile...")
 }
 
 
+private fun writeToMongo(f_name: String, it: Paquete, collection: MongoCollection<Document>, existList: List<String>):WriteModel<Document> {
+
+    var lineas = mutableListOf<String>()
+    var countLetters = 0
+    var line = StringBuilder("")
+
+    it.lines.forEach { word ->
+        if (countLetters > 500) {
+            line.append(word + " ")
+            //out.write(line.toString() + "\n")
+            lineas.add(line.toString())
+            line.clear()
+            countLetters = 0
+        } else {
+            line.append(word + " ")
+        }
+        countLetters = line.length
+    }
+    if (line.isNotEmpty()) {
+        // out.write(line.toString())
+        lineas.add(line.toString())
+    }
+
+    // build the document
+    val dataFile = DataFile(id = it.file.absolutePath.toString().md5()
+            ,path = it.file.absolutePath.toLowerCase()
+            ,lines = lineas )
+
+    if (existList.contains(it.file.absolutePath.toString().md5()) ) {
+        //insert the document
+        //collection.insertOne(dataFile.getMongoDocument())
+        //println("Inserting record: ${dataFile.path}  ${dataFile.id}")
+        return UpdateOneModel(dataFile.getIdDocument(), dataFile.getReplaceLinesDocument())
+    }
+
+    return InsertOneModel(dataFile.getMongoDocument())
+
+}
+
 
 fun createMongoIdexes() {
+    val documents = ArrayList<WriteModel<Document>>()
     val collection = mongoCollection()
 
     val listIndexes = collection.listIndexes()
@@ -191,46 +199,7 @@ fun filterBlackListPath(noSearchList: List<String>, it: File): Boolean {
 }
 
 
-private fun writeToMongo(f_name: String, it: Paquete, collection: MongoCollection<Document>) {
-    var lineas = mutableListOf<String>()
-    var countLetters = 0
-    var line = StringBuilder("")
 
-    it.lines.forEach { word ->
-        if (countLetters > 500) {
-            line.append(word + " ")
-            //out.write(line.toString() + "\n")
-            lineas.add(line.toString())
-            line.clear()
-            countLetters = 0
-        } else {
-            line.append(word + " ")
-        }
-        countLetters = line.length
-    }
-    if (line.isNotEmpty()) {
-       // out.write(line.toString())
-        lineas.add(line.toString())
-    }
-
-    // build the document
-    val dataFile = DataFile(id = it.file.absolutePath.toString().md5()
-            ,path = it.file.absolutePath.toLowerCase()
-            ,lines = lineas )
-
-
-    val iterDoc = collection.findOneAndUpdate(dataFile.getIdDocument(), dataFile.getReplaceLinesDocument())
-
-    if (iterDoc == null ) {
-        //insert the document
-        collection.insertOne(dataFile.getMongoDocument())
-        println("Inserting record: ${dataFile.path}  ${dataFile.id}")
-    }else{
-        println("Updating record: ${dataFile.path}  ${dataFile.id}")
-    }
-
-
-}
 
 private fun wirteToFile(f_name: String, it: Paquete) {
     File("repository" + File.separator + "words" + File.separator + f_name).bufferedWriter().use { out ->

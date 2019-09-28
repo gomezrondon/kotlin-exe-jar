@@ -28,7 +28,13 @@ fun main(array: Array<String>) {
         }
         "3" -> { // Tokenizer
             createMongoIdexes()
-            readTextFile(folders)
+            val time = measureTimeMillis {
+                println("Start Reading Text files! ${LocalDateTime.now()}")
+                readTextFile(folders)
+                println("Done Reading!")
+            }
+            println("Exe. Time: $time ${LocalDateTime.now()} \n\n")
+
         }
         "4" -> { // search inside a text file
             val word = array[1]
