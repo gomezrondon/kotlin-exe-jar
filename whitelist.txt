@@ -1,0 +1,2 @@
+txt,cs,html,sln,csproj,config,resx,settings,pas,dpr,dproj
+res,dfm,ini,java,gradle
