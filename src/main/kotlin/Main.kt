@@ -1,6 +1,8 @@
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.flow.asFlow
+import kotlinx.coroutines.flow.forEach
 import kotlinx.coroutines.runBlocking
 import java.io.File
 import java.sql.DriverManager.println
@@ -21,42 +23,35 @@ fun main(arg: Array<String>) {
 
     File(salidaFile).delete()
 
-    arg.drop(2).forEach { word ->
-        getFilesWithWord(list, word, salidaFile)
-        //     countFileLinesCoroutines(list, word, salidaFile)  // each word to search mObjGaaData
-    }
+    val wordList = arg.toMutableList().drop(2)
+    getFilesWithWord(list, wordList, salidaFile)
+
 }
 
-
-
-
-
-private fun getFilesWithWord(toList: List<File>, word: String, salidaFile: String) {
-    val prefix = "C:\\Users\\JGomez\\source\\Workspaces\\ApplicationsGAA"
+private fun getFilesWithWord(toList: List<File>, searchList: List<String>, salidaFile: String) {
     runBlocking {
-
         val time = measureTimeMillis {
             val deferred = toList.map { file ->
                 GlobalScope.async {
-                    readFile(file, word)
+                    readFile(file, searchList)
                 }
             }
             val sum = deferred.awaitAll().flatten()
 
-            //   File(salidaFile).delete()
-
-            File(salidaFile).appendText("$word *** Word searched ***\n")
+            File(salidaFile).appendText("$searchList *** Word searched ***\n")
             File(salidaFile).appendText("*** Programs where the word exist ***\n")
+            File(salidaFile).appendText("")
+
             sum.distinctBy { it.path }.forEach {
-                val relativePath = it.path.removePrefix(prefix)
-                File(salidaFile).appendText("+ ${relativePath} \n")
-                //   println("${it.numline}:   ${it.path} >> ${it.line}")
+                File(salidaFile).appendText("+ ${it.path} \n")
             }
 
+            File(salidaFile).appendText("")
             File(salidaFile).appendText("*** what line the word is use in each program ***\n")
+            File(salidaFile).appendText("")
+
             sum.forEach {
-                val relativePath = it.path.removePrefix(prefix)
-                File(salidaFile).appendText("${it.numline}:   ${relativePath} >> ${it.line} \n")
+                File(salidaFile).appendText("${it.numline}:   ${it.path} >> ${it.line} \n")
                 //   println("${it.numline}:   ${it.path} >> ${it.line}")
             }
             File(salidaFile).appendText("\n")
@@ -66,15 +61,25 @@ private fun getFilesWithWord(toList: List<File>, word: String, salidaFile: Strin
     }
 }
 
-
-
-fun readFile(file: File, word: String): List<SearchResult> {
-    //  println("File ${file.name} total lines: $size")
+fun readFile(file: File, searchList: List<String>): List<SearchResult> {
     return file.readText().split("\n")
         .mapIndexed { index, s -> Pair(index + 1,s) }
-        .filter { it.second.lowercase().contains(word.lowercase()) }
-        .map { SearchResult(file.name, file.path,numline =  it.first, line = it.second) }
+        .filter {  containsAll(it.second,searchList ) }
+        .map { SearchResult(file.name, file.path,numline =  it.first, line = it.second.toString()) }
+}
 
+private fun containsAll(lineList: String, searchList: List<String>): Boolean {
+    var contains = false
+
+    for (word: String in searchList) {
+        contains = lineList.contains(word)
+
+        if (!contains) {
+            break
+        }
+    }
+
+    return contains
 }
 
 data class SearchResult(val fileName: String, val path:String, val numline: Int, val line: String)
