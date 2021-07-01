@@ -1,11 +1,8 @@
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
-import kotlinx.coroutines.flow.asFlow
-import kotlinx.coroutines.flow.forEach
 import kotlinx.coroutines.runBlocking
 import java.io.File
-import java.sql.DriverManager.println
 import kotlin.system.measureTimeMillis
 
 
@@ -24,31 +21,82 @@ fun main(arg: Array<String>) {
     File(salidaFile).delete()
 
     val wordList = arg.toMutableList().drop(2)
-    getFilesWithWord(list, wordList, salidaFile)
+   // getFilesWithWord(list, wordList, salidaFile)
+    generateInvertIndex(list)
+}
+
+
+private fun generateInvertIndex(filesList: List<File>) {
+
+    File("invert-index.txt").delete()
+
+    runBlocking {
+        val time = measureTimeMillis {
+            val deferred = filesList.map { file ->
+                GlobalScope.async {
+                    getWordsFromFile(file)
+                }
+            }
+
+            val sum = deferred.awaitAll()
+
+            sum.forEach {
+               // println(it)
+                File("invert-index.txt").appendText(  "$it  \n")
+            }
+
+        }
+        println("total time: $time")
+    }
+}
+
+fun getWordsFromFile(file: File): indexResultFile {
+
+    val toMutableList = file.readText().split("\n")
+        .flatMap { it.split("""\s+""".toRegex()) }
+        // .flatMap { it.chunked(3) }
+        .flatMap { it.windowed(3) }
+        .map { it.lowercase() }
+        .filter { !it.isNullOrEmpty() }
+        .distinct()
+        .toMutableList()
+/*        .forEach {
+            File(outputFile).appendText(it)
+            File(outputFile).appendText( " ")
+          //  println(it)
+        }*/
+
+    val indexResultFile = indexResultFile(file.name, file.path, toMutableList)
+
+    return indexResultFile
 
 }
 
-private fun getFilesWithWord(toList: List<File>, searchList: List<String>, salidaFile: String) {
+
+private fun getFilesWithWord(filesList: List<File>, searchList: List<String>, salidaFile: String) {
     runBlocking {
         val time = measureTimeMillis {
-            val deferred = toList.map { file ->
+            val deferred = filesList.map { file ->
                 GlobalScope.async {
                     readFile(file, searchList)
                 }
             }
             val sum = deferred.awaitAll().flatten()
 
-            File(salidaFile).appendText("$searchList *** Word searched ***\n")
-            File(salidaFile).appendText("*** Programs where the word exist ***\n")
-            File(salidaFile).appendText("")
+            File(salidaFile).appendText("""
+                $searchList *** Word searched ***
+                *** Programs where the word exist *** 
+            """.trimIndent())
+
+            File(salidaFile).appendText(" \n  \n")
 
             sum.distinctBy { it.path }.forEach {
                 File(salidaFile).appendText("+ ${it.path} \n")
             }
 
-            File(salidaFile).appendText("")
+            File(salidaFile).appendText(" \n   \n")
             File(salidaFile).appendText("*** what line the word is use in each program ***\n")
-            File(salidaFile).appendText("")
+            File(salidaFile).appendText(" ")
 
             sum.forEach {
                 File(salidaFile).appendText("${it.numline}:   ${it.path} >> ${it.line} \n")
@@ -68,6 +116,8 @@ fun readFile(file: File, searchList: List<String>): List<SearchResult> {
         .map { SearchResult(file.name, file.path,numline =  it.first, line = it.second.toString()) }
 }
 
+
+
 private fun containsAll(lineList: String, searchList: List<String>): Boolean {
     var contains = false
 
@@ -82,4 +132,5 @@ private fun containsAll(lineList: String, searchList: List<String>): Boolean {
     return contains
 }
 
+data class indexResultFile(val fileName: String, val path:String, val lines: MutableList<String>)
 data class SearchResult(val fileName: String, val path:String, val numline: Int, val line: String)
