@@ -33,6 +33,7 @@ fun main(arg: Array<String>) {
 private fun generateInvertIndex(filesList: List<File>) {
 
     File("invert-index.txt").delete()
+    File("file-code.txt").delete()
 
     runBlocking {
         val time = measureTimeMillis {
@@ -65,7 +66,7 @@ private fun generateInvertIndex(filesList: List<File>) {
             }
 
         }
-        println("total time: $time")
+        println("total time2 : $time")
     }
 }
 
