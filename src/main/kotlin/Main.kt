@@ -4,6 +4,7 @@ import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.runBlocking
 import java.io.File
 import java.util.*
+import java.util.concurrent.ConcurrentHashMap
 import kotlin.system.measureTimeMillis
 
 
@@ -43,9 +44,24 @@ private fun generateInvertIndex(filesList: List<File>) {
 
             val sum = deferred.awaitAll()
 
+            val map = ConcurrentHashMap<String, MutableList<String>>()
+
             sum.forEach {
                // println(it)
-                File("invert-index.txt").appendText(  "$it  \n")
+                val fileCode = it.fileCode
+                val lines = it.lines.toList()
+                lines.forEach { word ->
+                    if (map.get(word) == null) {
+                        map[word] = mutableListOf(fileCode)
+                    } else {
+                        map.get(word)?.add(fileCode)
+                    }
+                }
+                File("file-code.txt").appendText(  "${it.fileCode} | ${it.path}  \n")
+            }
+
+            map.forEach { t, u ->
+                File("invert-index.txt").appendText(  "$t | ${u.toString()}  \n")
             }
 
         }
