@@ -3,8 +3,8 @@ import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.runBlocking
 import java.io.File
+import java.util.*
 import kotlin.system.measureTimeMillis
-
 
 
 // java -jar kotlin-search.jar C:\temp true/flase <search-words>
@@ -14,6 +14,9 @@ fun main(arg: Array<String>) {
 
     val searchDirectory = arg[0] //"D:\\"
     val reBuild:Boolean= arg[1].toBoolean()
+
+/*    val uuid = UUID.randomUUID()
+    println(uuid)*/
 
     createFileWithFileNames(outFileName, searchDirectory,reBuild)
     val list = getListOfFiles(outFileName)
@@ -66,7 +69,8 @@ fun getWordsFromFile(file: File): indexResultFile {
           //  println(it)
         }*/
 
-    val indexResultFile = indexResultFile(file.name, file.path, toMutableList)
+    val uuid = UUID.randomUUID().toString().take(8)
+    val indexResultFile = indexResultFile(uuid,file.name, file.path, toMutableList)
 
     return indexResultFile
 
@@ -132,5 +136,5 @@ private fun containsAll(lineList: String, searchList: List<String>): Boolean {
     return contains
 }
 
-data class indexResultFile(val fileName: String, val path:String, val lines: MutableList<String>)
+data class indexResultFile(val fileCode: String, val fileName: String, val path:String, val lines: MutableList<String>)
 data class SearchResult(val fileName: String, val path:String, val numline: Int, val line: String)
