@@ -1,53 +1,38 @@
-buildscript {
-    ext.kotlin_version = '1.3.41'
-
-    repositories {
-        mavenCentral()
-    }
-    dependencies {
-        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
-    }
+plugins {
+    id 'org.jetbrains.kotlin.jvm' version '1.6.20'
 }
 
-group 'com.gomezrondon.kotlin'
-//version '1.0-SNAPSHOT'
-
-
-apply plugin: 'kotlin'
-
-sourceCompatibility = 1.8
+group = 'org.example'
+version = '1.0-SNAPSHOT'
 
 repositories {
     mavenCentral()
 }
 
 dependencies {
-    compile group: 'org.jaunt-lang', name: 'jaunt', version: '1.9.0-RC4'
+    testImplementation 'org.jetbrains.kotlin:kotlin-test'
+}
 
-    compile group: 'org.jetbrains.kotlin', name: 'kotlin-script-runtime', version: '1.3.41'
-    compile "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlin_version"
-    testCompile group: 'junit', name: 'junit', version: '4.12'
+test {
+    useJUnitPlatform()
 }
 
 compileKotlin {
-    kotlinOptions.jvmTarget = "1.8"
-}
-compileTestKotlin {
-    kotlinOptions.jvmTarget = "1.8"
+    kotlinOptions.jvmTarget = '1.8'
 }
 
-sourceSets {
-    main.java.srcDirs += 'src/main/kotlin/'
-    test.java.srcDirs += 'src/test/kotlin/'
+compileTestKotlin {
+    kotlinOptions.jvmTarget = '1.8'
 }
 
 jar {
     manifest {
-        attributes 'Main-Class': 'MainKt'
+        attributes(
+                'Main-Class': 'MainKt'
+        )
+    }
+    from {
+        configurations.runtimeClasspath.fileCollection { it.name.endsWith('jar') }.collect { zipTree(it) }
     }
 
-    // This line of code recursively collects and copies all of a project's files
-    // and adds them to the JAR itself. One can extend this task, to skip certain
-    // files or particular types at will
-    from { configurations.compile.collect { it.isDirectory() ? it : zipTree(it) } }
 }
