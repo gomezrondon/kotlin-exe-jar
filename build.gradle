@@ -31,8 +31,6 @@ jar {
                 'Main-Class': 'MainKt'
         )
     }
-    from {
-        configurations.runtimeClasspath.fileCollection { it.name.endsWith('jar') }.collect { zipTree(it) }
-    }
+ from { configurations.compileClasspath.collect { it.isDirectory() ? it : zipTree(it) } }
 
 }
