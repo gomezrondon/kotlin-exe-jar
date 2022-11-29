@@ -26,11 +26,12 @@ compileTestKotlin {
 }
 
 jar {
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
     manifest {
         attributes(
                 'Main-Class': 'MainKt'
         )
     }
- from { configurations.compileClasspath.collect { it.isDirectory() ? it : zipTree(it) } }
+    from { configurations.compileClasspath.collect { it.isDirectory() ? it : zipTree(it) } }
 
 }
